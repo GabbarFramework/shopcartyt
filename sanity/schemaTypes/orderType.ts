@@ -148,6 +148,22 @@ export const orderType = defineType({
       type: "datetime",
       validation: (Rule) => Rule.required(),
     }),
+    defineField({
+      name: "razorpayOrderId",
+      title: "Razorpay Order ID",
+      type: "string",
+    }),
+    defineField({
+      name: "razorpayPaymentId",
+      title: "Razorpay Payment ID",
+      type: "string",
+    }),
+    defineField({
+      name: "razorpayCustomerId",
+      title: "Razorpay Customer ID",
+      type: "string",
+      validation: (Rule) => Rule.required(),
+    }),
   ],
   preview: {
     select: {

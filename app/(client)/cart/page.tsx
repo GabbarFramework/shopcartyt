@@ -4,6 +4,7 @@ import {
   createCheckoutSession,
   Metadata,
 } from "@/actions/createCheckoutSession";
+import { createRazorpayOrder } from "@/actions/createRazorpayOrder";
 import Container from "@/components/Container";
 import EmptyCart from "@/components/EmptyCart";
 import NoAccess from "@/components/NoAccess";
@@ -89,12 +90,32 @@ const CartPage = () => {
         clerkUserId: user?.id,
         address: selectedAddress,
       };
-      const checkoutUrl = await createCheckoutSession(groupedItems, metadata);
-      if (checkoutUrl) {
-        window.location.href = checkoutUrl;
-      }
+      const orderData = await createRazorpayOrder(groupedItems, metadata);
+      
+      const options = {
+        key: orderData.key,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Your Store Name",
+        description: "Payment for your order",
+        order_id: orderData.orderId,
+        handler: function (response: any) {
+          window.location.href = `${process.env.NEXT_PUBLIC_BASE_URL}/success?order_id=${response.razorpay_order_id}&payment_id=${response.razorpay_payment_id}&orderNumber=${metadata.orderNumber}`;
+        },
+        prefill: {
+          name: metadata.customerName,
+          email: metadata.customerEmail,
+        },
+        theme: {
+          color: "#4CAF50",
+        },
+      };
+
+      const razorpay = new (window as any).Razorpay(options);
+      razorpay.open();
     } catch (error) {
-      console.error("Error creating checkout session:", error);
+      console.error("Error creating Razorpay order:", error);
+      toast.error("Failed to create order. Please try again.");
     } finally {
       setLoading(false);
     }
